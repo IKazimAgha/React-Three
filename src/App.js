@@ -1,45 +1,76 @@
-import logo from './logo.svg';
-import './App.css';
-import { Canvas, useFrame, useLoader } from '@react-three/fiber'
-import { OrbitControls, Stars } from '@react-three/drei'
-import { useRef } from 'react';
-import { TextureLoader } from 'three';
-import earthImg from './assests/earth.jpg';
+import './index.css';
+import {Suspense, useRef,useState} from 'react'
+import { Canvas} from '@react-three/fiber'
+import {OrbitControls, useGLTF} from '@react-three/drei'
 
-function Box() {
-  const earthRef = useRef();
-
-  useFrame(() => {
-    earthRef.current.rotation.y += 0.004;
-    earthRef.current.rotation.x += 0.004;
-  });
-
-  const earthMap = useLoader(TextureLoader, earthImg);
-
+function Model({ ...props }) {
+  const group = useRef()
+  const { nodes, materials } = useGLTF('/shoe.gltf')
   return (
-    <group>
-      <mesh ref={earthRef} rotation-x={Math.PI * 0.25} rotation-y={Math.PI * 0.25}>
-        <sphereBufferGeometry /> 
-        <meshStandardMaterial map={earthMap} />
-      </mesh>
+    <group ref={group} {...props} dispose={null} scale={3}>
+      <mesh geometry={nodes.shoe.geometry} material={materials.laces} material-color={props.customColors.setStripes}/>
+      <mesh geometry={nodes.shoe_1.geometry} material={materials.mesh} material-color={props.customColors.mesh}/>
+      <mesh geometry={nodes.shoe_2.geometry} material={materials.caps} material-color={props.customColors.soul}/>
+      <mesh geometry={nodes.shoe_3.geometry} material={materials.inner}material-color={props.customColors.soul} />
+      <mesh geometry={nodes.shoe_4.geometry} material={materials.sole} material-color={props.customColors.soul}/>
+      <mesh geometry={nodes.shoe_5.geometry} material={materials.stripes}material-color={props.customColors.stripes} />
+      <mesh geometry={nodes.shoe_6.geometry} material={materials.band} material-color={props.customColors.stripes}/>
+      <mesh geometry={nodes.shoe_7.geometry} material={materials.patch} material-color={props.customColors.soul}/>
     </group>
-  );
+  )
 }
 
+
 function App() {
+ 
+  const [mesh,setMesh] = useState("#ffffff")
+  const [stripes,setStripes] = useState("#ffffff")
+  const [soul,setSoul] = useState("#ffffff")
+
   return (
     <div className="App">
-      <Canvas>
-        <OrbitControls />
-        <Stars />
-        {/* <ambientLight intensity={0.5} /> */}
-        <directionalLight intensity={0.5} />
-        <spotLight 
-          position={[10, 15, 10]}
-          angle={0.3} 
-        />
-        <Box />
-      </Canvas>
+        <div className="wrapper">
+            <div className="card">
+                <div className="product-canvas">
+                   <Canvas>
+                      <Suspense fallback={null}>
+                          <ambientLight />
+                          <spotLight intensity={0.9} 
+                                     angle={0.1} 
+                                     penumbra={1} 
+                                     position={[10,15,10]}
+                                     castShadow />
+                          <Model customColors={{mesh:mesh, stripes:stripes , soul:soul }}/>
+                          <OrbitControls enablePan={true}
+                                         enableZoom={true}
+                                         enableRotate={true}/>
+                      </Suspense>
+                   </Canvas>
+                </div>
+                <h2>Color chooser</h2>
+                <div className='colors'>
+                    <div>
+                        <input type="color" id="mesh" name="mesh"
+                              value={mesh} 
+                              onChange={(e) => setMesh(e.target.value)}/>
+                        <label for="mesh">Main</label>
+                      </div>
+
+                    <div>
+                        <input type="color" id="stripes" name="stripes"
+                                value= {stripes}
+                                onChange={(e) => setStripes(e.target.value)}/>
+                        <label for="stripes">Stripes</label>
+                    </div>
+                    <div>
+                        <input type="color" id="soul" name="soul"
+                                value={soul} 
+                                onChange={(e) => setSoul(e.target.value)}/>
+                        <label for="soul">Soul</label>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
   );
 }
